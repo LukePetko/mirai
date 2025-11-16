@@ -8,10 +8,11 @@ defmodule Mirai.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      {Mirai.HAConnection,
+      {Mirai.HA.Connector,
        host: System.get_env("HA_HOST", "homeassistant.local"),
        port: String.to_integer(System.get_env("HA_PORT", "8123")),
-       token: System.get_env("HA_TOKEN")}
+       token: System.get_env("HA_TOKEN")},
+      {Mirai.AutomationEngine, []}
       # Starts a worker by calling: Mirai.Worker.start_link(arg)
       # {Mirai.Worker, arg}
     ]

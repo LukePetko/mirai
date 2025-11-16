@@ -1,4 +1,4 @@
-defmodule Mirai.HAConnection do
+defmodule Mirai.HA.Connector do
   use GenServer
   require Logger
 
@@ -38,8 +38,6 @@ defmodule Mirai.HAConnection do
   def handle_info({:gun_ws, _conn, _stream, {:text, json}}, state) do
     msg = Jason.decode!(json)
 
-    Logger.debug("Received message: #{inspect(msg)}")
-
     case msg["type"] do
       "auth_required" ->
         Logger.info("Auth required")
@@ -53,7 +51,7 @@ defmodule Mirai.HAConnection do
         {:noreply, %{state | authenticated: true}}
 
       "event" ->
-        Logger.info("Received event: #{inspect(msg["event"])}")
+        Mirai.AutomationEngine.trigger(msg["event"])
         {:noreply, state}
 
       "result" ->
@@ -83,7 +81,8 @@ defmodule Mirai.HAConnection do
     # Subscribe to ALL events
     subscribe_msg = Jason.encode!(%{
       id: state.msg_id,
-      type: "subscribe_events"
+      type: "subscribe_events",
+      event_type: "state_changed"
     })
     :gun.ws_send(state.conn, state.stream, {:text, subscribe_msg})
     Logger.info("Subscribed to all Home Assistant events")
