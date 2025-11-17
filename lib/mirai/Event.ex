@@ -17,7 +17,8 @@ defmodule Mirai.Event do
           new_state: map() | nil,
           attributes: map(),
           context: map(),
-          event: map()
+          event: map(),
+          raw: map()
         }
 
   @enforce_keys [:id, :source, :type, :timestamp]
@@ -32,7 +33,8 @@ defmodule Mirai.Event do
     :new_state,
     :attributes,
     :context,
-    :event
+    :event,
+    :raw
   ]
 
   def new(params) do

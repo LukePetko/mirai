@@ -51,7 +51,9 @@ defmodule Mirai.HA.Connector do
         {:noreply, %{state | authenticated: true}}
 
       "event" ->
-        Mirai.AutomationEngine.trigger(msg["event"])
+        Mirai.HA.Normalizer.normalize(msg)
+        |> Mirai.AutomationEngine.trigger()
+
         {:noreply, state}
 
       "result" ->
@@ -76,17 +78,19 @@ defmodule Mirai.HA.Connector do
     {:noreply, state}
   end
 
-    # Helper function to subscribe to events
+  # Helper function to subscribe to events
   defp subscribe_to_events(state) do
     # Subscribe to ALL events
-    subscribe_msg = Jason.encode!(%{
-      id: state.msg_id,
-      type: "subscribe_events",
-      event_type: "state_changed"
-    })
+    subscribe_msg =
+      Jason.encode!(%{
+        id: state.msg_id,
+        type: "subscribe_events",
+        event_type: "state_changed"
+      })
+
     :gun.ws_send(state.conn, state.stream, {:text, subscribe_msg})
     Logger.info("Subscribed to all Home Assistant events")
-    
+
     # Or subscribe to specific event types:
     # subscribe_msg = Jason.encode!(%{
     #   id: state.msg_id,
