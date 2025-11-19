@@ -17,10 +17,10 @@ defmodule Mirai.AutomationEngine do
   end
 
   def handle_cast({:trigger, event}, state) do
-    Logger.info("Triggered event: #{inspect(event)}")
+    # Logger.info("Triggered event: #{inspect(event)}")
 
     Enum.each(state.automations, fn automation ->
-      GenServer.cast(automation, {:check_event, event, self()})
+      GenServer.cast(automation, {:check_event, event})
     end)
 
     {:noreply, state}
@@ -36,9 +36,9 @@ defmodule Mirai.AutomationEngine do
         |> Enum.map(fn file ->
           file_path = Path.join(automations_path, file)
           Code.compile_file(file_path)
-
           module_name = file |> String.replace(".ex", "") |> Macro.camelize()
-          String.to_atom(module_name)
+          # Use the fully qualified module name!
+          Module.concat([Mirai.Automations, module_name])
         end)
 
       {:error, _} ->

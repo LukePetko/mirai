@@ -7,7 +7,7 @@ defmodule Mirai.HA.Connector do
   end
 
   def send_command(msg) do
-    GenServer.cast(__MODULE__, {:send_command, {:send, msg}})
+    GenServer.cast(__MODULE__, {:send, msg})
   end
 
   def init(opts) do
