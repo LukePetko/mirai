@@ -10,6 +10,7 @@ defmodule Mirai.Application do
     automations = discover_and_compile_automations()
 
     children = [
+      {Phoenix.PubSub, name: Mirai.PubSub},
       {Mirai.HA.Connector,
        host: System.get_env("HA_HOST", "homeassistant.local"),
        port: String.to_integer(System.get_env("HA_PORT", "8123")),

@@ -52,7 +52,9 @@ defmodule Mirai.HA.Connector do
 
       "event" ->
         Mirai.HA.Normalizer.normalize(msg)
-        |> Mirai.AutomationEngine.trigger()
+        |> then(fn normalized ->
+          Phoenix.PubSub.broadcast(Mirai.PubSub, "ha:events", {:event, normalized})
+        end)
 
         {:noreply, state}
 
