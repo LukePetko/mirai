@@ -15,7 +15,6 @@ defmodule Mirai.Application do
        host: System.get_env("HA_HOST", "homeassistant.local"),
        port: String.to_integer(System.get_env("HA_PORT", "8123")),
        token: System.get_env("HA_TOKEN")},
-      {Mirai.AutomationEngine, []}
       # Starts a worker by calling: Mirai.Worker.start_link(arg)
       # {Mirai.Worker, arg}
     ] ++ Enum.map(automations, fn automation -> {automation, []} end)
