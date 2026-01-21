@@ -48,7 +48,8 @@ defmodule Mirai.HA.Connector do
       "auth_ok" ->
         Logger.info("Authenticated")
         subscribe_to_events(state)
-        {:noreply, %{state | authenticated: true}}
+        # Increment msg_id after subscribe used it
+        {:noreply, %{state | authenticated: true, msg_id: state.msg_id + 1}}
 
       "event" ->
         Mirai.HA.Normalizer.normalize(msg)
@@ -59,7 +60,12 @@ defmodule Mirai.HA.Connector do
         {:noreply, state}
 
       "result" ->
-        Logger.info("Received result: #{inspect(msg["result"])}")
+        if msg["result"] == nil and msg["success"] == true do
+          Logger.debug("Received result: nil (success) for id=#{msg["id"]}")
+        else
+          Logger.info("Received result: #{inspect(msg["result"])} for id=#{msg["id"]}")
+        end
+
         {:noreply, state}
 
       other ->
@@ -75,9 +81,16 @@ defmodule Mirai.HA.Connector do
   end
 
   def handle_cast({:send, msg}, state) do
-    json = Jason.encode!(msg)
+    # Assign monotonically increasing ID
+    msg_with_id = Map.put(msg, :id, state.msg_id)
+
+    Logger.debug(
+      "Sending: id=#{state.msg_id} #{msg[:domain]}.#{msg[:service]} target=#{inspect(msg[:target])}"
+    )
+
+    json = Jason.encode!(msg_with_id)
     :gun.ws_send(state.conn, state.stream, {:text, json})
-    {:noreply, state}
+    {:noreply, %{state | msg_id: state.msg_id + 1}}
   end
 
   # Helper function to subscribe to events

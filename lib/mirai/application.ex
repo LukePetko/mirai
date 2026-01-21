@@ -9,15 +9,19 @@ defmodule Mirai.Application do
   def start(_type, _args) do
     automations = discover_and_compile_automations()
 
-    children = [
-      {Phoenix.PubSub, name: Mirai.PubSub},
-      {Mirai.HA.Connector,
-       host: System.get_env("HA_HOST", "homeassistant.local"),
-       port: String.to_integer(System.get_env("HA_PORT", "8123")),
-       token: System.get_env("HA_TOKEN")},
-      # Starts a worker by calling: Mirai.Worker.start_link(arg)
-      # {Mirai.Worker, arg}
-    ] ++ Enum.map(automations, fn automation -> {automation, []} end)
+    ha_opts = [
+      host: System.get_env("HA_HOST", "homeassistant.local"),
+      port: String.to_integer(System.get_env("HA_PORT", "8123")),
+      token: System.get_env("HA_TOKEN")
+    ]
+
+    children =
+      [
+        {Phoenix.PubSub, name: Mirai.PubSub},
+        {Mirai.HA.Connector, ha_opts},
+        {Mirai.HA.StateCache, ha_opts},
+        Mirai.GlobalState
+      ] ++ Enum.map(automations, fn automation -> {automation, []} end)
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
@@ -27,18 +31,20 @@ defmodule Mirai.Application do
 
   defp discover_and_compile_automations do
     automations_path = Path.join(:code.priv_dir(:mirai), "automations")
-    
+
     case File.ls(automations_path) do
       {:ok, files} ->
         files
         |> Enum.filter(&String.ends_with?(&1, ".ex"))
         |> Enum.flat_map(fn file ->
           file_path = Path.join(automations_path, file)
+
           Code.compile_file(file_path)
           |> Enum.map(fn {mod, _} -> mod end)
         end)
-      
-      {:error, _} -> []
+
+      {:error, _} ->
+        []
     end
   end
 end

@@ -1,0 +1,17 @@
+services:
+  mirai:
+    build: .
+    container_name: mirai
+    restart: unless-stopped
+    environment:
+      - HA_HOST=${HA_HOST:-homeassistant.local}
+      - HA_PORT=${HA_PORT:-8123}
+      - HA_TOKEN=${HA_TOKEN}
+    volumes:
+      # Persist global state across restarts
+      - mirai_data:/app/data
+      # Mount automations for easy editing (optional, remove for production)
+      # - ./priv/automations:/app/lib/mirai-0.1.0/priv/automations:ro
+
+volumes:
+  mirai_data:

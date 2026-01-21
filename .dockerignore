@@ -1,0 +1,27 @@
+# Build artifacts
+_build/
+deps/
+.elixir_ls/
+
+# Git
+.git/
+.gitignore
+
+# Environment
+.env
+*.env
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+# IDE
+.idea/
+.vscode/
+
+# Test
+test/
+cover/
+
+# Documentation
+doc/

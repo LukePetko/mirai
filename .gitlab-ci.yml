@@ -1,0 +1,29 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  IMAGE_NAME: mirai
+  CONTAINER_NAME: mirai
+
+build:
+  stage: build
+  script:
+    - docker build -t $IMAGE_NAME .
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+deploy:
+  stage: deploy
+  script:
+    - docker stop $CONTAINER_NAME || true
+    - docker rm $CONTAINER_NAME || true
+    - docker run -d
+      --name $CONTAINER_NAME
+      --restart unless-stopped
+      -e HA_HOST=$HA_HOST
+      -e HA_PORT=$HA_PORT
+      -e HA_TOKEN=$HA_TOKEN
+      $IMAGE_NAME
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
