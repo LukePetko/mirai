@@ -7,15 +7,14 @@ defmodule Mirai.Automations.KitchenQuickAction do
   - "brightness_move_up": Toggle dining room lamp
   """
   use Mirai.Automation
-  import Mirai.Entities
 
-  @kitchen_lights [light_kitchen_1(), light_kitchen_2()]
+  @kitchen_lights ["light.kitchen_1", "light.kitchen_2"]
 
   # "on" action → Toggle kitchen lights
-  def handle_event(%{entity_id: sensor_kitchen_qab_action(), new_state: %{state: "on"}}, state) do
-    case get_state(light_kitchen()) do
+  def handle_event(%{entity_id: "sensor.kitchen_qab_action", new_state: %{state: "on"}}, state) do
+    case get_state("light.kitchen") do
       {:ok, %{state: "on"}} ->
-        call_service("light.turn_off", %{entity_id: light_kitchen() })
+        call_service("light.turn_off", %{entity_id: @kitchen_lights})
 
       _ ->
         call_service("light.turn_on", %{entity_id: @kitchen_lights, brightness_pct: 100})
@@ -26,10 +25,10 @@ defmodule Mirai.Automations.KitchenQuickAction do
 
   # "brightness_move_up" action → Toggle dining
   def handle_event(
-        %{entity_id: sensor_kitchen_qab_action(), new_state: %{state: "brightness_move_up"}},
+        %{entity_id: "sensor.kitchen_qab_action", new_state: %{state: "brightness_move_up"}},
         state
       ) do
-    call_service("light.toggle", %{entity_id: light_dining_room_lamp()})
+    call_service("light.toggle", %{entity_id: "light.dining_room_lamp"})
     {:ok, state}
   end
 

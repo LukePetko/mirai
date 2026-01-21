@@ -24,4 +24,5 @@ mirai-*.tar
 
 .env
 
-/lib/mirai/generated
+# Generated entities (local dev only)
+/lib/mirai/generated/
