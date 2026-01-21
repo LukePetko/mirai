@@ -21,6 +21,7 @@ deploy:
     - docker run -d
       --name $CONTAINER_NAME
       --restart unless-stopped
+      --network host
       -e HA_HOST=$HA_HOST
       -e HA_PORT=$HA_PORT
       -e HA_TOKEN=$HA_TOKEN
