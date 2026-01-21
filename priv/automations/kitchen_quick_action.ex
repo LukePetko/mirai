@@ -14,7 +14,7 @@ defmodule Mirai.Automations.KitchenQuickAction do
   def handle_event(%{entity_id: "sensor.kitchen_qab_action", new_state: %{state: "on"}}, state) do
     case get_state("light.kitchen") do
       {:ok, %{state: "on"}} ->
-        call_service("light.turn_off", %{entity_id: @kitchen_lights})
+        call_service("light.turn_off", %{entity_id: "light.kitchen"})
 
       _ ->
         call_service("light.turn_on", %{entity_id: @kitchen_lights, brightness_pct: 100})
