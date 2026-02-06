@@ -3,18 +3,18 @@ defmodule Mirai.Automations.KitchenQuickAction do
   Kitchen Quick Action Button automation.
 
   Button actions:
-  - "on": Toggle kitchen lights
+  - "on": Toggle kitchen lights (full brightness when turning on)
   - "brightness_move_up": Toggle dining room lamp
   """
   use Mirai.Automation
 
   @kitchen_lights ["light.kitchen_1", "light.kitchen_2"]
 
-  # "on" action → Toggle kitchen lights
+  # "on" action -> Toggle kitchen lights
   def handle_event(%{entity_id: "sensor.kitchen_qab_action", new_state: %{state: "on"}}, state) do
     case get_state("light.kitchen") do
       {:ok, %{state: "on"}} ->
-        call_service("light.turn_off", %{entity_id: "light.kitchen"})
+        call_service("light.turn_off", %{area_id: "kitchen"})
 
       _ ->
         call_service("light.turn_on", %{entity_id: @kitchen_lights, brightness_pct: 100})
@@ -23,7 +23,7 @@ defmodule Mirai.Automations.KitchenQuickAction do
     {:ok, state}
   end
 
-  # "brightness_move_up" action → Toggle dining
+  # "brightness_move_up" action -> Toggle dining room lamp
   def handle_event(
         %{entity_id: "sensor.kitchen_qab_action", new_state: %{state: "brightness_move_up"}},
         state
