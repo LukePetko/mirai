@@ -15,11 +15,18 @@ defmodule Mirai.Application do
       token: System.get_env("HA_TOKEN")
     ]
 
+    mqtt_opts = [
+      host: System.get_env("MQTT_HOST", "localhost"),
+      port: String.to_integer(System.get_env("MQTT_PORT", "1883")),
+      client_id: System.get_env("MQTT_CLIENT_ID", "mirai")
+    ]
+
     children =
       [
         {Phoenix.PubSub, name: Mirai.PubSub},
         {Mirai.HA.Connector, ha_opts},
         {Mirai.HA.StateCache, ha_opts},
+        {Mirai.MQTT.Connector, mqtt_opts},
         Mirai.GlobalState
       ] ++ Enum.map(automations, fn automation -> {automation, []} end)
 
