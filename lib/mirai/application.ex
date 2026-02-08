@@ -41,10 +41,16 @@ defmodule Mirai.Application do
 
           Code.compile_file(file_path)
           |> Enum.map(fn {mod, _} -> mod end)
+          |> Enum.filter(&is_automation?/1)
         end)
 
       {:error, _} ->
         []
     end
+  end
+
+  # Only start modules that use Mirai.Automation (have start_link/1)
+  defp is_automation?(module) do
+    function_exported?(module, :start_link, 1)
   end
 end
