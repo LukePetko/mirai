@@ -1,7 +1,7 @@
 defmodule Mirai.MQTT.Connector do
   use GenServer
   require Logger
-  alias Tortoise.{Connection, Transport, Handler}
+  alias Tortoise.{Connection, Transport}
 
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
@@ -13,8 +13,7 @@ defmodule Mirai.MQTT.Connector do
       port: Keyword.get(opts, :port, 1883),
       client_id: Keyword.fetch!(opts, :client_id),
       topics: [
-        {"example/topic", 0},
-        {"example/topic2", 0}
+        {"pomodoro/timer/+", 0}
       ]
     }
 
@@ -22,7 +21,7 @@ defmodule Mirai.MQTT.Connector do
       Connection.start_link(
         client_id: state.client_id,
         server: {Transport.Tcp, host: state.host, port: state.port},
-        handler: {Handler.Logger, []}
+        handler: {Mirai.MQTT.Handler, []}
       )
 
     Logger.info("Connected to MQTT broker at #{state.host}:#{state.port}")

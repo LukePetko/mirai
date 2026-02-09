@@ -78,6 +78,7 @@ defmodule Mirai.Automation do
 
       def init(_args) do
         Phoenix.PubSub.subscribe(Mirai.PubSub, "ha:events")
+        Phoenix.PubSub.subscribe(Mirai.PubSub, "mqtt:events")
 
         user_state =
           if function_exported?(__MODULE__, :initial_state, 0) do
