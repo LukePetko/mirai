@@ -7,6 +7,11 @@ defmodule Mirai.MQTT.Connector do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
+  def publish(topic, payload, opts \\ []) do
+    qos = Keyword.get(opts, :qos, 0)
+    GenServer.cast(__MODULE__, {:publish, topic, payload, qos})
+  end
+
   def init(opts) do
     state = %{
       host: Keyword.fetch!(opts, :host) |> String.to_charlist(),
@@ -38,6 +43,11 @@ defmodule Mirai.MQTT.Connector do
 
   def handle_info({{Tortoise, _client_id}, _ref, result}, state) do
     Logger.debug("MQTT operation result: #{inspect(result)}")
+    {:noreply, state}
+  end
+
+  def handle_cast({:publish, topic, payload, qos}, state) do
+    Tortoise.publish(state.client_id, topic, payload, qos: qos)
     {:noreply, state}
   end
 end

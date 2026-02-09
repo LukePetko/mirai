@@ -221,4 +221,9 @@ defmodule Mirai.Automation.Helpers do
   def delete_global(key) do
     Mirai.GlobalState.delete(key)
   end
+
+  def mqtt_publish(topic, payload, opts \\ []) do
+    encoded = if is_binary(payload), do: payload, else: Jason.encode!(payload)
+    Mirai.MQTT.Connector.publish(topic, encoded, opts)
+  end
 end
