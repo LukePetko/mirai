@@ -7,6 +7,9 @@ defmodule Mirai.Application do
 
   @impl true
   def start(_type, _args) do
+    # Required for DateTime.shift_zone/2 (eg "Europe/Prague").
+    Calendar.put_time_zone_database(Tzdata.TimeZoneDatabase)
+
     automations = discover_and_compile_automations()
 
     ha_opts = [
@@ -43,6 +46,9 @@ defmodule Mirai.Application do
       {:ok, files} ->
         files
         |> Enum.filter(&String.ends_with?(&1, ".ex"))
+        |> Enum.sort_by(fn file ->
+          {if(String.starts_with?(file, "shared"), do: 0, else: 1), file}
+        end)
         |> Enum.flat_map(fn file ->
           file_path = Path.join(automations_path, file)
 

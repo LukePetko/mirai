@@ -24,13 +24,10 @@ defmodule Mirai.Automations.SharedActions do
   end
 
   @doc """
-  Enters night mode if within night hours (21:30 - 06:00).
-  Always sets global state to "night".
+  Enters night mode - sets global state to "night".
   """
   def enter_night_mode do
-    if night_time?() do
-      set_global(:global_state, "night")
-    end
+    set_global(:global_state, "night")
   end
 
   @doc """
@@ -44,16 +41,19 @@ defmodule Mirai.Automations.SharedActions do
   Checks if current time is within night hours (21:30 - 06:00).
   """
   def night_time? do
-    now = DateTime.utc_now() |> DateTime.shift_zone!("Europe/Prague")
+    now = local_now()
     hour = now.hour
     minute = now.minute
 
-    # Night time: 21:30 to 06:00
-    cond do
-      hour >= 21 and minute >= 30 -> true
-      hour >= 22 -> true
-      hour < 6 -> true
-      true -> false
+    hour > 21 or (hour == 21 and minute >= 30) or hour < 6
+  end
+
+  defp local_now do
+    utc = DateTime.utc_now()
+
+    case DateTime.shift_zone(utc, "Europe/Prague") do
+      {:ok, local} -> local
+      {:error, _reason} -> utc
     end
   end
 
