@@ -12,6 +12,13 @@ defmodule Mirai.Application do
 
     automations = discover_and_compile_automations()
 
+    scheduler_opts = [
+      automations: automations,
+      latitude: parse_float(System.get_env("MIRAI_LATITUDE")),
+      longitude: parse_float(System.get_env("MIRAI_LONGITUDE")),
+      timezone: System.get_env("MIRAI_TIMEZONE", "Europe/Prague")
+    ]
+
     ha_opts = [
       host: System.get_env("HA_HOST", "homeassistant.local"),
       port: String.to_integer(System.get_env("HA_PORT", "8123")),
@@ -31,7 +38,9 @@ defmodule Mirai.Application do
         {Mirai.HA.StateCache, ha_opts},
         {Mirai.MQTT.Connector, mqtt_opts},
         Mirai.GlobalState
-      ] ++ Enum.map(automations, fn automation -> {automation, []} end)
+      ] ++
+        Enum.map(automations, fn automation -> {automation, []} end) ++
+        [{Mirai.Scheduler, scheduler_opts}]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
@@ -65,5 +74,14 @@ defmodule Mirai.Application do
   # Only start modules that use Mirai.Automation (have start_link/1)
   defp is_automation?(module) do
     function_exported?(module, :start_link, 1)
+  end
+
+  defp parse_float(nil), do: nil
+
+  defp parse_float(str) when is_binary(str) do
+    case Float.parse(str) do
+      {val, _} -> val
+      :error -> nil
+    end
   end
 end

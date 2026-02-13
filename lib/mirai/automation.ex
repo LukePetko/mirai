@@ -49,6 +49,16 @@ defmodule Mirai.Automation do
       end
 
   Scheduling a timer with the same name cancels the previous one automatically.
+
+  ## Schedules
+
+  You can also declare time-based schedules using `@schedule`.
+
+      @schedule daily: ~T[19:00:00], message: :evening
+      @schedule sunset: [offset: -30], message: :pre_sunset
+      @schedule every: :timer.minutes(15), message: :poll
+
+  Scheduled messages are delivered to `handle_message/2`.
   """
 
   @doc "Called for every Home Assistant event"
@@ -63,12 +73,24 @@ defmodule Mirai.Automation do
 
   @optional_callbacks [initial_state: 0, handle_message: 2]
 
+  defmacro __before_compile__(env) do
+    schedules = Module.get_attribute(env.module, :schedule) || []
+
+    quote location: :keep do
+      @doc false
+      def __schedules__, do: unquote(Macro.escape(schedules))
+    end
+  end
+
   defmacro __using__(_opts) do
     quote location: :keep do
       use GenServer
       require Logger
       @behaviour Mirai.Automation
       import Mirai.Automation.Helpers
+
+      Module.register_attribute(__MODULE__, :schedule, accumulate: true)
+      @before_compile Mirai.Automation
 
       # --- GenServer boilerplate ---
 
@@ -142,6 +164,35 @@ defmodule Mirai.Automation do
           )
 
           {:noreply, new_state}
+        end
+      end
+
+      # Handle scheduled messages
+      def handle_info({:schedule, name}, state) do
+        if function_exported?(__MODULE__, :handle_message, 2) do
+          try do
+            case apply(__MODULE__, :handle_message, [name, state.user_state]) do
+              {:ok, new_user_state} ->
+                {:noreply, %{state | user_state: new_user_state}}
+
+              other ->
+                Logger.warning(
+                  "[#{__MODULE__}] handle_message returned unexpected: #{inspect(other)}"
+                )
+
+                {:noreply, state}
+            end
+          rescue
+            e ->
+              Logger.error("[#{__MODULE__}] Error in handle_message: #{inspect(e)}")
+              {:noreply, state}
+          end
+        else
+          Logger.warning(
+            "[#{__MODULE__}] Scheduled message #{inspect(name)} received but no handle_message/2 defined"
+          )
+
+          {:noreply, state}
         end
       end
 

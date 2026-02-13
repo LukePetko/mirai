@@ -26,3 +26,6 @@ mirai-*.tar
 
 # Generated entities (local dev only)
 /lib/mirai/generated/
+
+# DETS persistent state files
+priv/data/*.dets
