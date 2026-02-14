@@ -7,11 +7,13 @@ services:
       - HA_HOST=${HA_HOST:-homeassistant.local}
       - HA_PORT=${HA_PORT:-8123}
       - HA_TOKEN=${HA_TOKEN}
+      - MIRAI_AUTOMATIONS_PATH=/automations
+      - MIRAI_DATA_PATH=/app/data
     volumes:
       # Persist global state across restarts
       - mirai_data:/app/data
-      # Mount automations for easy editing (optional, remove for production)
-      # - ./priv/automations:/app/lib/mirai-0.1.0/priv/automations:ro
+      # Mount automations from the mirai-automations repo
+      - ../mirai-automations/automations:/automations:ro
 
 volumes:
   mirai_data:

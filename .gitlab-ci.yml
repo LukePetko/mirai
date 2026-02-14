@@ -5,6 +5,8 @@ stages:
 variables:
   IMAGE_NAME: mirai
   CONTAINER_NAME: mirai
+  AUTOMATIONS_REPO: ${AUTOMATIONS_REPO_URL}
+  AUTOMATIONS_DIR: /opt/mirai-automations
 
 build:
   stage: build
@@ -16,6 +18,13 @@ build:
 deploy:
   stage: deploy
   script:
+    # Pull latest automations
+    - |
+      if [ -d "$AUTOMATIONS_DIR" ]; then
+        cd $AUTOMATIONS_DIR && git pull
+      else
+        git clone $AUTOMATIONS_REPO $AUTOMATIONS_DIR
+      fi
     - docker stop $CONTAINER_NAME || true
     - docker rm $CONTAINER_NAME || true
     - docker run -d
@@ -25,6 +34,10 @@ deploy:
       -e HA_HOST=$HA_HOST
       -e HA_PORT=$HA_PORT
       -e HA_TOKEN=$HA_TOKEN
+      -e MIRAI_AUTOMATIONS_PATH=/automations
+      -e MIRAI_DATA_PATH=/app/data
+      -v $AUTOMATIONS_DIR/automations:/automations:ro
+      -v mirai_data:/app/data
       $IMAGE_NAME
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'

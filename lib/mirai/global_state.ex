@@ -53,7 +53,7 @@ defmodule Mirai.GlobalState do
   - Values can be any Erlang term (atoms, maps, lists, tuples, etc.)
   - Writes are synchronous and immediately persisted
   - Reads are fast (direct DETS lookup)
-  - DETS file is stored in `priv/data/global_state.dets`
+  - DETS file is stored at `MIRAI_DATA_PATH` (env var) or `priv/data/global_state.dets` by default
   """
 
   use GenServer
@@ -147,7 +147,7 @@ defmodule Mirai.GlobalState do
 
   def init(_opts) do
     # Ensure data directory exists
-    data_dir = Path.join(:code.priv_dir(:mirai), "data")
+    data_dir = System.get_env("MIRAI_DATA_PATH") || Path.join(:code.priv_dir(:mirai), "data")
     File.mkdir_p!(data_dir)
 
     # Open DETS table (creates file if doesn't exist)

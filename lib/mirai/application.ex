@@ -49,7 +49,9 @@ defmodule Mirai.Application do
   end
 
   defp discover_and_compile_automations do
-    automations_path = Path.join(:code.priv_dir(:mirai), "automations")
+    automations_path =
+      System.get_env("MIRAI_AUTOMATIONS_PATH") ||
+        Path.join(:code.priv_dir(:mirai), "automations")
 
     case File.ls(automations_path) do
       {:ok, files} ->
