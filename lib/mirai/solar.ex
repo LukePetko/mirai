@@ -68,16 +68,18 @@ defmodule Mirai.Solar do
   end
 
   defp solar_event(kind, location, date, offset_min, timezone) do
+    datetime = local_datetime_for(date, ~T[12:00:00], timezone)
+
     result =
       case kind do
         :sunrise ->
-          Astro.sunrise(location, date,
+          Astro.sunrise(location, datetime,
             time_zone: timezone,
             time_zone_database: Tzdata.TimeZoneDatabase
           )
 
         :sunset ->
-          Astro.sunset(location, date,
+          Astro.sunset(location, datetime,
             time_zone: timezone,
             time_zone_database: Tzdata.TimeZoneDatabase
           )
@@ -106,13 +108,32 @@ defmodule Mirai.Solar do
   end
 
   defp normalize_timezone(tz) when is_binary(tz) do
-    case DateTime.shift_zone(DateTime.utc_now(), tz) do
-      {:ok, _} -> tz
-      {:error, _} -> "Etc/UTC"
+    tz = String.trim(tz)
+
+    case tz do
+      "" ->
+        "Etc/UTC"
+
+      _ ->
+        case DateTime.shift_zone(DateTime.utc_now(), tz) do
+          {:ok, _} -> tz
+          {:error, _} -> "Etc/UTC"
+        end
     end
   end
 
   defp normalize_timezone(_), do: "Etc/UTC"
+
+  defp local_datetime_for(date, time, timezone) do
+    naive = NaiveDateTime.new!(date, time)
+
+    case DateTime.from_naive(naive, timezone, Tzdata.TimeZoneDatabase) do
+      {:ok, dt} -> dt
+      {:ambiguous, _dt1, dt2} -> dt2
+      {:gap, _dt1, dt2} -> dt2
+      {:error, _} -> DateTime.from_naive!(naive, "Etc/UTC")
+    end
+  end
 
   defp normalize_location(lat, lng) when is_number(lat) and is_number(lng), do: {lng, lat}
   defp normalize_location(_lat, _lng), do: nil

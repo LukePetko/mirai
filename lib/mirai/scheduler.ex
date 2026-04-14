@@ -318,13 +318,13 @@ defmodule Mirai.Scheduler do
       result =
         case kind do
           :sunrise ->
-            Astro.sunrise(location, date,
+            Astro.sunrise(location, local_datetime_for(date, ~T[12:00:00], timezone),
               time_zone: timezone,
               time_zone_database: Tzdata.TimeZoneDatabase
             )
 
           :sunset ->
-            Astro.sunset(location, date,
+            Astro.sunset(location, local_datetime_for(date, ~T[12:00:00], timezone),
               time_zone: timezone,
               time_zone_database: Tzdata.TimeZoneDatabase
             )
