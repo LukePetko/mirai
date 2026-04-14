@@ -29,6 +29,9 @@ deploy:
       -e HA_HOST=$HA_HOST
       -e HA_PORT=$HA_PORT
       -e HA_TOKEN=$HA_TOKEN
+      -e MIRAI_LATITUDE=$MIRAI_LATITUDE
+      -e MIRAI_LONGITUDE=$MIRAI_LONGITUDE
+      -e MIRAI_TIMEZONE=$MIRAI_TIMEZONE
       -e MIRAI_AUTOMATIONS_PATH=/automations
       -e MIRAI_DATA_PATH=/app/data
       -v /mnt/user/appdata/mirai-automations/automations:/automations:ro

@@ -7,6 +7,9 @@ services:
       - HA_HOST=${HA_HOST:-homeassistant.local}
       - HA_PORT=${HA_PORT:-8123}
       - HA_TOKEN=${HA_TOKEN}
+      - MIRAI_LATITUDE=${MIRAI_LATITUDE}
+      - MIRAI_LONGITUDE=${MIRAI_LONGITUDE}
+      - MIRAI_TIMEZONE=${MIRAI_TIMEZONE:-Europe/Prague}
       - MIRAI_AUTOMATIONS_PATH=/automations
       - MIRAI_DATA_PATH=/app/data
     volumes:
