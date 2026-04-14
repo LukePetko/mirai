@@ -152,6 +152,32 @@ defmodule Mirai.Automation.Helpers do
     Mirai.HA.StateCache.get_state!(entity_id)
   end
 
+  @doc """
+  Returns whether the current time is between sunset and the following sunrise.
+
+  ## Examples
+
+      if between_sunset_and_sunrise?(sunset_offset: -60) do
+        call_service("light.turn_on", %{entity_id: "light.kitchen"})
+      end
+  """
+  def between_sunset_and_sunrise?(opts \\ []) do
+    Mirai.Solar.between_sunset_and_sunrise?(opts)
+  end
+
+  @doc """
+  Returns whether the current time is between sunrise and the following sunset.
+
+  ## Examples
+
+      if between_sunrise_and_sunset?(sunrise_offset: 30) do
+        call_service("cover.open_cover", %{entity_id: "cover.blinds"})
+      end
+  """
+  def between_sunrise_and_sunset?(opts \\ []) do
+    Mirai.Solar.between_sunrise_and_sunset?(opts)
+  end
+
   # --- Global State Helpers ---
 
   @doc """
