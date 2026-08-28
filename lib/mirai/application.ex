@@ -53,24 +53,30 @@ defmodule Mirai.Application do
       System.get_env("MIRAI_AUTOMATIONS_PATH") ||
         Path.join(:code.priv_dir(:mirai), "automations")
 
-    case File.ls(automations_path) do
-      {:ok, files} ->
-        files
-        |> Enum.filter(&String.ends_with?(&1, ".ex"))
-        |> Enum.sort_by(fn file ->
-          {if(String.starts_with?(file, "shared"), do: 0, else: 1), file}
-        end)
-        |> Enum.flat_map(fn file ->
-          file_path = Path.join(automations_path, file)
+    automations_path
+    |> automation_files()
+    |> Enum.flat_map(fn file_path ->
+      Code.compile_file(file_path)
+      |> Enum.map(fn {mod, _} -> mod end)
+      |> Enum.filter(&is_automation?/1)
+    end)
+  end
 
-          Code.compile_file(file_path)
-          |> Enum.map(fn {mod, _} -> mod end)
-          |> Enum.filter(&is_automation?/1)
-        end)
+  @doc false
+  def automation_files(automations_path) do
+    automations_path
+    |> Path.join("**/*.ex")
+    |> Path.wildcard()
+    |> Enum.sort_by(fn file_path ->
+      relative_path = Path.relative_to(file_path, automations_path)
+      path_parts = Path.split(relative_path)
 
-      {:error, _} ->
-        []
-    end
+      shared? =
+        String.starts_with?(Path.basename(relative_path), "shared") or
+          match?(["shared" | _], path_parts)
+
+      {if(shared?, do: 0, else: 1), relative_path}
+    end)
   end
 
   # Only start modules that use Mirai.Automation (have start_link/1)
