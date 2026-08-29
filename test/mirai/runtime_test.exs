@@ -5,15 +5,31 @@ defmodule Mirai.RuntimeTest do
   end
 
   setup do
+    deployment_file =
+      Path.join(
+        System.tmp_dir!(),
+        "mirai-runtime-deployment-#{System.unique_integer([:positive])}.json"
+      )
+
+    File.write!(
+      deployment_file,
+      Jason.encode!(%{branch: "feature/hall-relay", commit: "abc1234"})
+    )
+
     runtime =
       start_supervised!(
-        {Mirai.Runtime, name: :runtime_test, automations: [HallAutomation], max_events: 2}
+        {Mirai.Runtime,
+         name: :runtime_test,
+         automations: [HallAutomation],
+         max_events: 2,
+         deployment_file: deployment_file}
       )
 
     Process.register(self(), HallAutomation)
 
     on_exit(fn ->
       if Process.whereis(HallAutomation) == self(), do: Process.unregister(HallAutomation)
+      File.rm(deployment_file)
     end)
 
     %{runtime: runtime}
@@ -30,6 +46,7 @@ defmodule Mirai.RuntimeTest do
     assert snapshot.metrics.loaded_automations == 1
     assert snapshot.metrics.expected_automations == 1
     assert snapshot.runtime.status == "online"
+    assert snapshot.deployment == %{branch: "feature/hall-relay", commit: "abc1234"}
 
     assert [automation] = snapshot.automations
     assert automation.id == "Mirai.RuntimeTest.HallAutomation"
