@@ -64,7 +64,8 @@ defmodule Mirai.Runtime do
        automations: automations,
        events: [],
        max_events: max(Keyword.get(opts, :max_events, @default_max_events), 0),
-       started_at: System.monotonic_time(:second)
+       started_at: System.monotonic_time(:second),
+       deployment_file: Keyword.get(opts, :deployment_file, default_deployment_file())
      }}
   end
 
@@ -142,10 +143,7 @@ defmodule Mirai.Runtime do
         version: application_version()
       },
       home_assistant: home_assistant_status(),
-      deployment: %{
-        branch: System.get_env("MIRAI_AUTOMATIONS_BRANCH"),
-        commit: System.get_env("MIRAI_AUTOMATIONS_COMMIT")
-      },
+      deployment: deployment_metadata(state.deployment_file),
       metrics: %{
         loaded_automations: loaded,
         expected_automations: map_size(state.automations),
@@ -254,6 +252,46 @@ defmodule Mirai.Runtime do
     |> to_string()
     |> String.slice(0, max_length)
   end
+
+  defp deployment_metadata(path) do
+    file_metadata =
+      with {:ok, json} <- File.read(path),
+           {:ok, metadata} when is_map(metadata) <- Jason.decode(json) do
+        metadata
+      else
+        _unavailable_or_invalid -> %{}
+      end
+
+    %{
+      branch:
+        optional_text(
+          System.get_env("MIRAI_AUTOMATIONS_BRANCH") || file_metadata["branch"],
+          160
+        ),
+      commit:
+        optional_text(
+          System.get_env("MIRAI_AUTOMATIONS_COMMIT") || file_metadata["commit"],
+          64
+        )
+    }
+  end
+
+  defp default_deployment_file do
+    automations_path =
+      System.get_env("MIRAI_AUTOMATIONS_PATH") ||
+        Path.join(:code.priv_dir(:mirai), "automations")
+
+    Path.join(automations_path, ".mirai-deployment.json")
+  end
+
+  defp optional_text(value, max_length) when is_binary(value) do
+    case String.trim(value) do
+      "" -> nil
+      text -> bounded_text(text, max_length)
+    end
+  end
+
+  defp optional_text(_value, _max_length), do: nil
 
   defp action_message(service, nil), do: service
   defp action_message(service, target), do: "#{service} → #{target}"

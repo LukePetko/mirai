@@ -41,3 +41,7 @@ The snapshot contains sanitized process health, Home Assistant connection health
 action/error events, and automation summaries. It never includes Home Assistant credentials or raw
 automation state.
 
+Deployment branch and commit are read from `.mirai-deployment.json` inside
+`MIRAI_AUTOMATIONS_PATH`. `MIRAI_AUTOMATIONS_BRANCH` and `MIRAI_AUTOMATIONS_COMMIT` can override
+the file when deployment metadata is supplied another way.
+
