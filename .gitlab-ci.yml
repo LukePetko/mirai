@@ -34,6 +34,9 @@ deploy:
       -e MIRAI_TIMEZONE=$MIRAI_TIMEZONE
       -e MIRAI_AUTOMATIONS_PATH=/automations
       -e MIRAI_DATA_PATH=/app/data
+      -e MIRAI_RUNTIME_API_BIND=127.0.0.1
+      -e MIRAI_RUNTIME_API_PORT=4100
+      -e MIRAI_RUNTIME_API_TOKEN=$MIRAI_RUNTIME_API_TOKEN
       -v /mnt/user/appdata/mirai-automations/automations:/automations:ro
       -v mirai_data:/app/data
       $IMAGE_NAME

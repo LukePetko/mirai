@@ -79,6 +79,9 @@ defmodule Mirai.Automation do
     quote location: :keep do
       @doc false
       def __schedules__, do: unquote(Macro.escape(schedules))
+
+      @doc false
+      def __mirai_automation__, do: true
     end
   end
 
@@ -130,6 +133,7 @@ defmodule Mirai.Automation do
         rescue
           e ->
             Logger.error("[#{__MODULE__}] Error in handle_event: #{inspect(e)}")
+            Mirai.Runtime.record_error(__MODULE__, "handle_event")
             {:noreply, state}
         end
       end
@@ -156,6 +160,7 @@ defmodule Mirai.Automation do
           rescue
             e ->
               Logger.error("[#{__MODULE__}] Error in handle_message: #{inspect(e)}")
+              Mirai.Runtime.record_error(__MODULE__, "handle_message")
               {:noreply, new_state}
           end
         else
@@ -185,6 +190,7 @@ defmodule Mirai.Automation do
           rescue
             e ->
               Logger.error("[#{__MODULE__}] Error in handle_message: #{inspect(e)}")
+              Mirai.Runtime.record_error(__MODULE__, "handle_message")
               {:noreply, state}
           end
         else
