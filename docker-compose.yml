@@ -12,6 +12,11 @@ services:
       - MIRAI_TIMEZONE=${MIRAI_TIMEZONE:-Europe/Prague}
       - MIRAI_AUTOMATIONS_PATH=/automations
       - MIRAI_DATA_PATH=/app/data
+      - MIRAI_RUNTIME_API_BIND=0.0.0.0
+      - MIRAI_RUNTIME_API_PORT=${MIRAI_RUNTIME_API_PORT:-4100}
+      - MIRAI_RUNTIME_API_TOKEN=${MIRAI_RUNTIME_API_TOKEN}
+    ports:
+      - "127.0.0.1:${MIRAI_RUNTIME_API_PORT:-4100}:${MIRAI_RUNTIME_API_PORT:-4100}"
     volumes:
       # Persist global state across restarts
       - mirai_data:/app/data

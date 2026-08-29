@@ -34,13 +34,14 @@ defmodule Mirai.Application do
     children =
       [
         {Phoenix.PubSub, name: Mirai.PubSub},
+        {Mirai.Runtime, automations: automations},
         {Mirai.HA.Connector, ha_opts},
         {Mirai.HA.StateCache, ha_opts},
         {Mirai.MQTT.Connector, mqtt_opts},
         Mirai.GlobalState
       ] ++
         Enum.map(automations, fn automation -> {automation, []} end) ++
-        [{Mirai.Scheduler, scheduler_opts}]
+        [{Mirai.Scheduler, scheduler_opts}] ++ runtime_api_children()
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
@@ -79,9 +80,30 @@ defmodule Mirai.Application do
     end)
   end
 
-  # Only start modules that use Mirai.Automation (have start_link/1)
+  # Only start modules that explicitly use Mirai.Automation.
   defp is_automation?(module) do
-    function_exported?(module, :start_link, 1)
+    function_exported?(module, :__mirai_automation__, 0) and module.__mirai_automation__()
+  end
+
+  defp runtime_api_children do
+    case System.get_env("MIRAI_RUNTIME_API_TOKEN") do
+      token when is_binary(token) and byte_size(token) >= 32 ->
+        [
+          {Bandit,
+           plug: {Mirai.Runtime.Api, token: token},
+           ip: runtime_api_ip(),
+           port: String.to_integer(System.get_env("MIRAI_RUNTIME_API_PORT", "4100"))}
+        ]
+
+      _missing_or_weak_token ->
+        []
+    end
+  end
+
+  defp runtime_api_ip do
+    bind = System.get_env("MIRAI_RUNTIME_API_BIND", "127.0.0.1")
+    {:ok, address} = :inet.parse_address(String.to_charlist(bind))
+    address
   end
 
   defp parse_float(nil), do: nil

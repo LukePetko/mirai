@@ -28,9 +28,11 @@ defmodule Mirai.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:bandit, "~> 1.12"},
       {:gun, "~> 2.2"},
       {:jason, "~> 1.4"},
       {:phoenix_pubsub, "~> 2.1"},
+      {:plug, "~> 1.20"},
       {:tortoise, "~> 0.10.0"},
       {:tzdata, "~> 1.1"},
       {:astro, "~> 1.1"}

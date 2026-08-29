@@ -28,6 +28,11 @@ defmodule Mirai.HA.Helpers do
     # Only add target if we have targeting keys
     msg = if map_size(target) > 0, do: Map.put(msg, :target, target), else: msg
 
+    msg =
+      msg
+      |> Map.put(:_runtime_source, caller_module())
+      |> Map.put(:_runtime_target, runtime_target(target))
+
     # Let Connector assign the ID (it tracks monotonically increasing IDs)
     Connector.send_command(msg)
   end
@@ -46,5 +51,16 @@ defmodule Mirai.HA.Helpers do
           {Map.put(target, atom_key, value), remaining}
       end
     end)
+  end
+
+  defp caller_module do
+    case Process.info(self(), :registered_name) do
+      {:registered_name, name} when is_atom(name) -> name
+      _unregistered -> "Unknown"
+    end
+  end
+
+  defp runtime_target(target) do
+    target[:entity_id] || target[:device_id] || target[:area_id]
   end
 end

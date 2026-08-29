@@ -58,6 +58,14 @@ defmodule Mirai.HA.StateCache do
     |> Enum.sort()
   end
 
+  @doc "Returns the number of cached entity states, or nil before the cache is ready."
+  def count do
+    case :ets.info(@table, :size) do
+      :undefined -> nil
+      count -> count
+    end
+  end
+
   # --- GenServer callbacks ---
 
   def init(opts) do

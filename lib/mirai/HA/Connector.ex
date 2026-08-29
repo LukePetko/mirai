@@ -10,6 +10,11 @@ defmodule Mirai.HA.Connector do
     GenServer.cast(__MODULE__, {:send, msg})
   end
 
+  @doc "Returns sanitized Home Assistant connection health."
+  def status(timeout \\ 250) do
+    GenServer.call(__MODULE__, :status, timeout)
+  end
+
   def init(opts) do
     state = %{
       host: Keyword.fetch!(opts, :host) |> String.to_charlist(),
@@ -18,12 +23,25 @@ defmodule Mirai.HA.Connector do
       conn: nil,
       stream: nil,
       authenticated: false,
-      msg_id: 1
+      msg_id: 1,
+      pending: %{},
+      runtime: Keyword.get(opts, :runtime, Mirai.Runtime)
     }
 
     # Connect async to not block startup
     send(self(), :connect)
     {:ok, state}
+  end
+
+  def handle_call(:status, _from, state) do
+    status =
+      cond do
+        state.authenticated -> "online"
+        state.conn -> "degraded"
+        true -> "offline"
+      end
+
+    {:reply, %{status: status}, state}
   end
 
   def handle_info(:connect, state) do
@@ -86,7 +104,7 @@ defmodule Mirai.HA.Connector do
           Logger.info("Received result: #{inspect(msg["result"])} for id=#{msg["id"]}")
         end
 
-        {:noreply, state}
+        {:noreply, complete_runtime_action(msg, state)}
 
       other ->
         Logger.info("Received message: #{inspect(other)}")
@@ -94,29 +112,121 @@ defmodule Mirai.HA.Connector do
     end
   end
 
+  def handle_info({:gun_ws, _conn, _stream, {:close, _code, _reason}}, state) do
+    Process.send_after(self(), :connect, 5_000)
+    {:noreply, disconnect(state)}
+  end
+
   def handle_info({:gun_down, _conn, _proto, reason, _killed}, state) do
     Logger.warning("Connection went down: #{inspect(reason)}. Reconnecting in 5s...")
     Process.send_after(self(), :connect, 5_000)
-    {:noreply, %{state | conn: nil, stream: nil, authenticated: false}}
+    {:noreply, disconnect(state)}
+  end
+
+  def handle_info({:runtime_action_timeout, id}, state) do
+    case Map.pop(state.pending, id) do
+      {nil, pending} ->
+        {:noreply, %{state | pending: pending}}
+
+      {action, pending} ->
+        Mirai.Runtime.record_error(action.source, "service response", state.runtime)
+        {:noreply, %{state | pending: pending}}
+    end
   end
 
   def handle_cast({:send, msg}, %{authenticated: false} = state) do
-    Logger.warning("Not connected to HA yet, dropping message: #{msg[:domain]}.#{msg[:service]}")
+    {runtime, outbound} = runtime_metadata(msg)
+
+    Logger.warning(
+      "Not connected to HA yet, dropping message: #{outbound[:domain]}.#{outbound[:service]}"
+    )
+
+    if tracked_source?(runtime.source) do
+      Mirai.Runtime.record_error(runtime.source, "service dispatch", state.runtime)
+    end
+
     {:noreply, state}
   end
 
   def handle_cast({:send, msg}, state) do
-    # Assign monotonically increasing ID
-    msg_with_id = Map.put(msg, :id, state.msg_id)
+    {runtime, outbound} = runtime_metadata(msg)
+    msg_with_id = Map.put(outbound, :id, state.msg_id)
 
     Logger.debug(
-      "Sending: id=#{state.msg_id} #{msg[:domain]}.#{msg[:service]} target=#{inspect(msg[:target])}"
+      "Sending: id=#{state.msg_id} #{outbound[:domain]}.#{outbound[:service]} target=#{inspect(outbound[:target])}"
     )
 
     json = Jason.encode!(msg_with_id)
     :gun.ws_send(state.conn, state.stream, {:text, json})
-    {:noreply, %{state | msg_id: state.msg_id + 1}}
+
+    pending =
+      if tracked_source?(runtime.source) do
+        timer = Process.send_after(self(), {:runtime_action_timeout, state.msg_id}, 30_000)
+
+        Map.put(state.pending, state.msg_id, %{
+          source: runtime.source,
+          service: runtime.service,
+          target: runtime.target,
+          started_at: System.monotonic_time(:millisecond),
+          timer: timer
+        })
+      else
+        state.pending
+      end
+
+    {:noreply, %{state | msg_id: state.msg_id + 1, pending: pending}}
   end
+
+  defp complete_runtime_action(msg, state) do
+    case Map.pop(state.pending, msg["id"]) do
+      {nil, pending} ->
+        %{state | pending: pending}
+
+      {action, pending} ->
+        Process.cancel_timer(action.timer)
+
+        if msg["success"] == true do
+          duration = System.monotonic_time(:millisecond) - action.started_at
+
+          Mirai.Runtime.record_action(
+            action.source,
+            action.service,
+            action.target,
+            duration,
+            state.runtime
+          )
+        else
+          Mirai.Runtime.record_error(action.source, "service call", state.runtime)
+        end
+
+        %{state | pending: pending}
+    end
+  end
+
+  defp disconnect(state) do
+    Enum.each(state.pending, fn {_id, action} ->
+      Process.cancel_timer(action.timer)
+      Mirai.Runtime.record_error(action.source, "service response", state.runtime)
+    end)
+
+    %{state | conn: nil, stream: nil, authenticated: false, pending: %{}}
+  end
+
+  defp runtime_metadata(msg) do
+    runtime = %{
+      source: msg[:_runtime_source],
+      target: msg[:_runtime_target],
+      service: "#{msg[:domain]}.#{msg[:service]}"
+    }
+
+    {runtime, Map.drop(msg, [:_runtime_source, :_runtime_target])}
+  end
+
+  defp tracked_source?(source) when is_atom(source) do
+    function_exported?(source, :__mirai_automation__, 0) and source.__mirai_automation__()
+  end
+
+  defp tracked_source?(_source), do: false
 
   # Helper function to subscribe to events
   defp subscribe_to_events(state) do
