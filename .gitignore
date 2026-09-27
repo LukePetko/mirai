@@ -1,31 +1,34 @@
-# The directory Mix will write compiled artifacts to.
-/_build/
+# dependencies (bun install)
+node_modules
 
-# If you run "mix test --cover", coverage assets end up here.
-/cover/
+# output
+out
+dist
+*.tgz
 
-# The directory Mix downloads your dependencies sources to.
-/deps/
+# code coverage
+coverage
+*.lcov
 
-# Where third-party dependencies like ExDoc output generated docs.
-/doc/
+# logs
+logs
+_.log
+report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
-# Temporary files, for example, from tests.
-/tmp/
-
-# If the VM crashes, it generates a dump, let's ignore it too.
-erl_crash.dump
-
-# Also ignore archive artifacts (built via "mix archive.build").
-*.ez
-
-# Ignore package tarball (built via "mix hex.build").
-mirai-*.tar
-
+# dotenv environment variable files
 .env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
 
-# Generated entities (local dev only)
-/lib/mirai/generated/
+# caches
+.eslintcache
+.cache
+*.tsbuildinfo
 
-# DETS persistent state files
-priv/data/*.dets
+# IntelliJ based IDEs
+.idea
+
+# Finder (MacOS) folder config
+.DS_Store

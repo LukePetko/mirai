@@ -1,0 +1,17 @@
+import z from "zod";
+
+const envSchema = z.object({
+	PORT: z.coerce.number().int().min(1).max(65535),
+	HA_HOST: z.string(),
+	HA_TOKEN: z.string(),
+});
+
+const parsed = envSchema.safeParse(process.env);
+
+if (!parsed.success) {
+	throw new Error(`Invalid environment variables: ${parsed.error}`);
+}
+
+export type Env = z.infer<typeof envSchema>;
+
+export default parsed.data;
