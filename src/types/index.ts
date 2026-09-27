@@ -1,4 +1,5 @@
 export type Source = "homeassistant" | "mqtt";
+export type EventType = "state_changed";
 
 type EntityState = {
 	state: string;
@@ -8,6 +9,7 @@ type EntityState = {
 
 export type MiraiEvent = {
 	source: Source;
+	event_type: EventType;
 	entity_id: string;
 	old_state?: EntityState;
 	new_state?: EntityState;
