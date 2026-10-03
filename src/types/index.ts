@@ -26,6 +26,9 @@ export type Capabilities = {
 			data?: object,
 		): Promise<unknown>;
 	};
+	mqtt: {
+		publish(topic: string, payload: string): void | Promise<unknown>;
+	};
 };
 
 export type Cap = keyof Capabilities;
@@ -36,6 +39,6 @@ export type AutomationContext<R extends Cap> = {
 } & { [K in R]: Capabilities[K] };
 
 export type Automation<R extends Cap = never> = {
-	f: (e: MiraiEvent, ctx: AutomationContext<R>) => Promise<unknown>;
-	require?: string[];
+	f: (e: MiraiEvent, ctx: AutomationContext<R>) => void | Promise<unknown>;
+	require?: R[];
 };
