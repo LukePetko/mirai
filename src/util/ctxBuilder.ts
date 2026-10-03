@@ -13,7 +13,7 @@ const providers: { [K in Cap]: () => Capabilities[K] } = {
 	}),
 };
 
-export default function ctxBuilder(name: string, req: Cap[]) {
+export default function ctxBuilder(name: string, req: Cap[] = []) {
 	const ctx: Record<string, unknown> = {
 		name,
 		log: (...a: unknown[]) => console.log(`[${ctx.name}]`, ...a),

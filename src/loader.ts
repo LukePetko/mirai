@@ -1,22 +1,36 @@
 import { join, parse, resolve } from "node:path";
 import env from "./util/env";
 import { readdir } from "node:fs/promises";
+import type { Automation, Cap } from "./types";
+
+const isAutomation = (x: unknown): x is Automation<Cap> =>
+	typeof x === "object" &&
+	x !== null &&
+	typeof (x as Automation<Cap>).f === "function";
 
 export const importAll = async () => {
-	const imports: { [key: string]: any } = {};
+	const imports: Record<string, Automation<Cap>> = {};
 	const path = resolve(env.AUTOMATIONS_PATH);
 
-	const files = (await readdir(path, { recursive: true })).filter(
-		(file) => file.endsWith(".ts") && !file.endsWith(".d.ts"),
-	);
+	const glob = new Bun.Glob("**/*.ts");
+	for await (const file of glob.scan({ cwd: path, onlyFiles: true })) {
+		if (file.endsWith(".d.ts") || file.includes("node_modules")) continue;
 
-	for (const file of files) {
 		const { dir, name } = parse(file);
 		const key = join(dir, name);
-		const mod = await import(join(path, file));
-		console.log(mod);
-		imports[key] = mod.default;
+
+		try {
+			const mod = await import(join(path, file));
+			if (!isAutomation(mod.default)) {
+				console.warn(`[${key}] is not an automation`);
+				continue;
+			}
+			imports[key] = mod.default;
+		} catch (err) {
+			console.error(`[${key}] failed to load:`, err);
+		}
 	}
 
+	console.log(`[loader] Loaded ${Object.keys(imports).length} automations`);
 	return imports;
 };

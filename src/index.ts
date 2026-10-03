@@ -7,9 +7,9 @@ const imports = await importAll();
 for (const [name, automation] of Object.entries(imports)) {
 	const ctx = ctxBuilder(name, automation.require);
 
-	subscribe((e) => {
+	subscribe(async (e) => {
 		try {
-			automation.f(e, ctx);
+			await automation.f(e, ctx);
 		} catch (err) {
 			console.error(`[${name}] crashed:`, err);
 		}

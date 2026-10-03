@@ -26,9 +26,6 @@ export type Capabilities = {
 			data?: object,
 		): Promise<unknown>;
 	};
-	mqtt: {
-		publish(topic: string, payload: string): void | Promise<unknown>;
-	};
 };
 
 export type Cap = keyof Capabilities;
