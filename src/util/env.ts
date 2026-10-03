@@ -4,6 +4,7 @@ const envSchema = z.object({
 	PORT: z.coerce.number().int().min(1).max(65535),
 	HA_HOST: z.string(),
 	HA_TOKEN: z.string(),
+	AUTOMATIONS_PATH: z.string(),
 });
 
 const parsed = envSchema.safeParse(process.env);
