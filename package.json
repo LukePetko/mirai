@@ -8,7 +8,8 @@
     },
     "bin": {
         "mirai-entity-codegen": "./src/codegen/entities.ts",
-        "mirai-service-codegen": "./src/codegen/services.ts"
+        "mirai-service-codegen": "./src/codegen/services.ts",
+        "mirai-service-data-codegen": "./src/codegen/serviceData.ts"
     },
 	"scripts": {
 		"dev": "bun --hot index.ts",

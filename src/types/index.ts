@@ -29,6 +29,16 @@ export type Services = Register extends {
 	? S
 	: Record<string, string>;
 
+export type ServiceData<D extends string, S extends string> = Register extends {
+	serviceData: infer SD;
+}
+	? D extends keyof SD
+		? S extends keyof SD[D]
+			? SD[D][S]
+			: object
+		: object
+	: object;
+
 export type EntityOf<D extends string> = string extends EntityId
 	? string
 	: D extends "homeassistant"
@@ -37,11 +47,11 @@ export type EntityOf<D extends string> = string extends EntityId
 
 export type Capabilities = {
 	homeassistant: {
-		callService<D extends keyof Services & string>(
+		callService<D extends keyof Services & string, S extends Services[D]>(
 			domain: D,
-			service: NoInfer<Services[D]>,
+			service: S,
 			target?: { entity_id: NoInfer<EntityOf<D> | EntityOf<D>[]> },
-			data?: object,
+			data?: NoInfer<ServiceData<D, S>>,
 		): Promise<unknown>;
 	};
 };
