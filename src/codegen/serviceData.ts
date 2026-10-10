@@ -52,11 +52,8 @@ const selectorToTs = (sel: Record<string, SelectorConfig> = {}) => {
 		case "theme":
 			return "string";
 		case "select":
-			const options: unknown[] = cfg?.options ?? [];
-			const lits = options.map((o) =>
-				JSON.stringify(
-					typeof o === "string" ? o : (o as { value: string }).value,
-				),
+			const lits = (cfg?.options ?? []).map((o) =>
+				JSON.stringify(typeof o === "string" ? o : o.value),
 			);
 			const union = lits.length ? lits.join(" | ") : "string";
 			return cfg?.multiple ? `(${union})[]` : union;
