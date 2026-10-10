@@ -1,7 +1,7 @@
 import { callService } from "home-assistant-js-websocket";
 import { getState } from "~/connectors/homeassistant/stateCache";
 import { conn } from "~/connectors/homeassistant/ws";
-import { createTimers } from "~/connectors/timers";
+import timers from "~/connectors/timers";
 import kv from "~/kv";
 import type { AutomationContext, Cap, Capabilities, EntityId } from "~/types";
 
@@ -16,7 +16,7 @@ export const providers: { [K in Cap]: () => Capabilities[K] } = {
 		getState,
 	}),
 	kv: () => kv,
-	timer: () => createTimers(),
+	timer: () => timers,
 };
 
 export default function ctxBuilder(name: string, req: Cap[] = []) {
