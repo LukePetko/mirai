@@ -4,6 +4,7 @@ const envSchema = z.object({
 	HA_HOST: z.string(),
 	HA_TOKEN: z.string(),
 	AUTOMATIONS_PATH: z.string(),
+	KV_PATH: z.string().default("kv.sqlite"),
 });
 
 const parsed = envSchema.safeParse(process.env);
