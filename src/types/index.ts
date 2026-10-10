@@ -5,7 +5,7 @@ export interface Register {}
 
 export type EntityId = Register extends { entityId: infer E extends string }
 	? E
-	: never;
+	: string;
 
 type EntityState = {
 	state: string;
@@ -29,12 +29,18 @@ export type Services = Register extends {
 	? S
 	: Record<string, string>;
 
+export type EntityOf<D extends string> = string extends EntityId
+	? string
+	: D extends "homeassistant"
+		? EntityId
+		: Extract<EntityId, `${D}.${string}`>;
+
 export type Capabilities = {
 	homeassistant: {
 		callService<D extends keyof Services & string>(
 			domain: D,
-			service: Services[D],
-			target?: { entity_id: EntityId | EntityId[] },
+			service: NoInfer<Services[D]>,
+			target?: { entity_id: NoInfer<EntityOf<D> | EntityOf<D>[]> },
 			data?: object,
 		): Promise<unknown>;
 	};
