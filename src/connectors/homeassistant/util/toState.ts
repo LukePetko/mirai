@@ -1,6 +1,7 @@
+import type { HassEntity } from "home-assistant-js-websocket";
 import type { EntityState } from "~/types";
 
-export default function toState(state: any): EntityState | null {
+export default function toState(state: HassEntity): EntityState | null {
 	return state
 		? {
 				state: state.state,

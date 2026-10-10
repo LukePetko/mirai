@@ -2,9 +2,14 @@
 // mirai/src/codegen/serviceData.ts
 import { resolve } from "node:path";
 
+type SelectorConfig = {
+	options?: (string | { value: string })[];
+	multiple?: boolean;
+} | null;
+
 type Field = {
 	required?: boolean;
-	selector?: Record<string, any>;
+	selector?: Record<string, SelectorConfig>;
 	fields?: Record<string, Field>;
 };
 type Domain = {
@@ -31,7 +36,7 @@ if (!res.ok) {
 
 const domains = (await res.json()) as Domain[];
 
-const selectorToTs = (sel: Record<string, any> = {}) => {
+const selectorToTs = (sel: Record<string, SelectorConfig> = {}) => {
 	const [kind, cfg] = Object.entries(sel)[0] ?? ["", {}];
 	switch (kind) {
 		case "number":
@@ -47,7 +52,7 @@ const selectorToTs = (sel: Record<string, any> = {}) => {
 		case "theme":
 			return "string";
 		case "select":
-			const options: unknown[] = cfg.options ?? [];
+			const options: unknown[] = cfg?.options ?? [];
 			const lits = options.map((o) =>
 				JSON.stringify(
 					typeof o === "string" ? o : (o as { value: string }).value,
