@@ -15,7 +15,7 @@ type DomainStates = {
 
 type EventTypes = Register extends { eventTypes: infer S } ? S : {};
 
-type AttributesOf<E extends string> = E extends keyof EventTypes
+export type AttributesOf<E extends string> = E extends keyof EventTypes
 	? { event_type: EventTypes[E] | null } & Record<string, unknown>
 	: Record<string, unknown>;
 
@@ -86,6 +86,9 @@ export type Capabilities = {
 			target?: { entity_id: NoInfer<EntityOf<D> | EntityOf<D>[]> },
 			data?: NoInfer<ServiceData<D, S>>,
 		): Promise<unknown>;
+		getState<E extends EntityId>(
+			id: E,
+		): EntityState<StateOf<E>, AttributesOf<E>> | undefined;
 	};
 	kv: KV;
 };

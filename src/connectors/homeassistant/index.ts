@@ -3,6 +3,7 @@ import type { MiraiEvent } from "~/types";
 import { conn } from "./ws";
 import { handlers } from "~/handlers";
 import toState from "./util/toState";
+import { syncStates, updateState } from "./stateCache";
 
 export const publish = (e: MiraiEvent) => {
 	for (const h of handlers) h(e);
@@ -20,5 +21,9 @@ await conn.subscribeEvents((e: HassEvent) => {
 		new_state: toState(new_state),
 	};
 
+	updateState(entity_id, event.new_state);
 	publish(event);
 }, "state_changed");
+
+await syncStates(conn);
+conn.addEventListener("ready", () => syncStates(conn));

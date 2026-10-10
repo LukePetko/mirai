@@ -1,7 +1,8 @@
 import { callService } from "home-assistant-js-websocket";
+import { getState } from "~/connectors/homeassistant/stateCache";
 import { conn } from "~/connectors/homeassistant/ws";
 import kv from "~/kv";
-import type { AutomationContext, Cap, Capabilities } from "~/types";
+import type { AutomationContext, Cap, Capabilities, EntityId } from "~/types";
 
 export const providers: { [K in Cap]: () => Capabilities[K] } = {
 	homeassistant: () => ({
@@ -11,6 +12,7 @@ export const providers: { [K in Cap]: () => Capabilities[K] } = {
 			target?: object,
 			data?: object,
 		) => callService(conn, domain, service, data, target),
+		getState,
 	}),
 	kv: () => kv,
 };
