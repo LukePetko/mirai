@@ -1,6 +1,5 @@
 import { join, parse, resolve } from "node:path";
 import env from "./util/env";
-import { readdir } from "node:fs/promises";
 import type { Automation, Cap } from "./types";
 
 const isAutomation = (x: unknown): x is Automation<Cap> =>

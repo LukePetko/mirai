@@ -6,6 +6,9 @@
     "exports": {
         ".": "./src/sdk.ts"
     },
+    "bin": {
+        "mirai-entity-codegen": "./src/codegen/entities.ts"
+    },
 	"scripts": {
 		"dev": "bun --hot index.ts",
 		"lint": "oxlint",

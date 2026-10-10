@@ -1,6 +1,12 @@
 export type Source = "homeassistant" | "mqtt";
 export type EventType = "state_changed";
 
+export interface Register {}
+
+export type EntityId = Register extends { entityId: infer E extends string }
+	? E
+	: never;
+
 type EntityState = {
 	state: string;
 	attributes: Record<string, unknown>;
@@ -10,7 +16,7 @@ type EntityState = {
 export type MiraiEvent = {
 	source: Source;
 	event_type: EventType;
-	entity_id: string;
+	entity_id: EntityId;
 	old_state?: EntityState;
 	new_state?: EntityState;
 };
@@ -22,7 +28,7 @@ export type Capabilities = {
 		callService(
 			domain: string,
 			service: string,
-			target?: object,
+			target?: { entity_id: EntityId | EntityId[] },
 			data?: object,
 		): Promise<unknown>;
 	};
@@ -38,4 +44,10 @@ export type AutomationContext<R extends Cap> = {
 export type Automation<R extends Cap = never> = {
 	f: (e: MiraiEvent, ctx: AutomationContext<R>) => void | Promise<unknown>;
 	require?: R[];
+};
+
+export type HassState = {
+	entity_id: string;
+	state: string;
+	attributes: Record<string, unknown>;
 };
