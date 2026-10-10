@@ -87,6 +87,7 @@ export type Capabilities = {
 			data?: NoInfer<ServiceData<D, S>>,
 		): Promise<unknown>;
 	};
+	kv: KV;
 };
 
 export type Cap = keyof Capabilities;

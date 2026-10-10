@@ -1,5 +1,6 @@
 import { callService } from "home-assistant-js-websocket";
 import { conn } from "~/connectors/homeassistant/ws";
+import kv from "~/kv";
 import type { AutomationContext, Cap, Capabilities } from "~/types";
 
 export const providers: { [K in Cap]: () => Capabilities[K] } = {
@@ -11,6 +12,7 @@ export const providers: { [K in Cap]: () => Capabilities[K] } = {
 			data?: object,
 		) => callService(conn, domain, service, data, target),
 	}),
+	kv: () => kv,
 };
 
 export default function ctxBuilder(name: string, req: Cap[] = []) {
