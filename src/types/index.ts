@@ -91,6 +91,7 @@ export type Capabilities = {
 		): EntityState<StateOf<E>, AttributesOf<E>> | undefined;
 	};
 	kv: KV;
+	timer: Timers;
 };
 
 export type Cap = keyof Capabilities;
@@ -115,4 +116,10 @@ export type KV = {
 	get<T>(key: string): Promise<T | undefined>;
 	set(key: string, value: unknown, opts?: { ttl?: number }): Promise<void>;
 	delete(key: string): Promise<void>;
+};
+
+export type Timers = {
+	set(name: string, ms: number, fn: () => void | Promise<unknown>): void;
+	cancel(name: string): void;
+	has(name: string): boolean;
 };

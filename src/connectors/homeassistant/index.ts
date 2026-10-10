@@ -26,4 +26,6 @@ await conn.subscribeEvents((e: HassEvent) => {
 }, "state_changed");
 
 await syncStates(conn);
-conn.addEventListener("ready", () => syncStates(conn));
+conn.addEventListener("ready", () =>
+	syncStates(conn).catch((err) => console.error("[ha] resync failed:", err)),
+);
