@@ -2,7 +2,7 @@ import { callService } from "home-assistant-js-websocket";
 import { conn } from "~/connectors/homeassistant/ws";
 import type { AutomationContext, Cap, Capabilities } from "~/types";
 
-const providers: { [K in Cap]: () => Capabilities[K] } = {
+export const providers: { [K in Cap]: () => Capabilities[K] } = {
 	homeassistant: () => ({
 		callService: (
 			domain: string,

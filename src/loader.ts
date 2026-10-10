@@ -1,6 +1,7 @@
 import { join, parse, resolve } from "node:path";
 import env from "./util/env";
 import type { Automation, Cap } from "./types";
+import validRequire from "./util/validRequire";
 
 const isAutomation = (x: unknown): x is Automation<Cap> =>
 	typeof x === "object" &&
@@ -24,6 +25,12 @@ export const importAll = async () => {
 				console.warn(`[${key}] is not an automation`);
 				continue;
 			}
+
+			if (!validRequire(mod.default.require)) {
+				console.warn(`[${key}] invalid require`, mod.default.require);
+				continue;
+			}
+
 			imports[key] = mod.default;
 		} catch (err) {
 			console.error(`[${key}] failed to load:`, err);
