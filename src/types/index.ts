@@ -106,3 +106,9 @@ export type HassState = {
 	state: string;
 	attributes: Record<string, unknown>;
 };
+
+export type KV = {
+	get<T>(key: string): Promise<T | undefined>;
+	set(key: string, value: unknown, opts?: { ttl?: number }): Promise<void>;
+	delete(key: string): Promise<void>;
+};
