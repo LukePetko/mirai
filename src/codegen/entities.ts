@@ -2,7 +2,10 @@
 // mirai/src/codegen/entities.ts
 import { resolve } from "node:path";
 
-type RawState = { entity_id: string; attributes: { options?: string } };
+type RawState = {
+	entity_id: string;
+	attributes: { options?: string; event_types?: unknown };
+};
 
 const isStringArray = (x: unknown): x is string[] =>
 	Array.isArray(x) && x.every((y) => typeof y === "string");
@@ -29,9 +32,21 @@ const ids = states.map((s) => s.entity_id).sort();
 
 const stateLines = states
 	.flatMap((s) =>
-		isStringArray(s.attributes.options)
+		isStringArray(s.attributes.options) && s.attributes.options.length > 0
 			? [
-					`\t\t\t${JSON.stringify(s.entity_id)}: ${s.attributes.options.map((o) => JSON.stringify(o)).join(" | ")};`,
+					`\t\t\t${JSON.stringify(s.entity_id)}: ${[...new Set(s.attributes.options)].map((o) => JSON.stringify(o)).join(" | ")};`,
+				]
+			: [],
+	)
+	.sort()
+	.join("\n");
+
+const eventTypes = states
+	.flatMap((s) =>
+		isStringArray(s.attributes.event_types) &&
+		s.attributes.event_types.length > 0
+			? [
+					`\t\t\t${JSON.stringify(s.entity_id)}: ${[...new Set(s.attributes.event_types)].map((o) => JSON.stringify(o)).join(" | ")};`,
 				]
 			: [],
 	)
@@ -45,8 +60,11 @@ declare module "mirai" {
     interface Register {
         entityId:
 ${ids.map((id) => `\t\t| "${id}"`).join("\n")};
-        entityState: {
+        entityStates: {
 ${stateLines}
+        }
+        eventTypes: {
+${eventTypes}
         }
     }
 }

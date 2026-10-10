@@ -13,6 +13,12 @@ type DomainStates = {
 	cover: "open" | "closed" | "opening" | "closing";
 };
 
+type EventTypes = Register extends { eventTypes: infer S } ? S : {};
+
+type AttributesOf<E extends string> = E extends keyof EventTypes
+	? { event_type: EventTypes[E] | null } & Record<string, unknown>
+	: Record<string, unknown>;
+
 type EntityStates = Register extends { entityStates: infer S } ? S : {};
 
 export type StateOf<E extends string> =
@@ -29,9 +35,12 @@ export type EntityId = Register extends { entityId: infer E extends string }
 	? E
 	: string;
 
-export type EntityState<S extends string = string> = {
+export type EntityState<
+	S extends string = string,
+	A = Record<string, unknown>,
+> = {
 	state: S;
-	attributes: Record<string, unknown>;
+	attributes: A;
 	lastChanged: Date;
 };
 
@@ -40,8 +49,8 @@ export type MiraiEvent = {
 		source: Source;
 		event_type: EventType;
 		entity_id: E;
-		old_state: EntityState<StateOf<E>> | null;
-		new_state: EntityState<StateOf<E>> | null;
+		old_state: EntityState<StateOf<E>, AttributesOf<E>> | null;
+		new_state: EntityState<StateOf<E>, AttributesOf<E>> | null;
 	};
 }[EntityId];
 
