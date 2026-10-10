@@ -7,7 +7,7 @@ export type EntityId = Register extends { entityId: infer E extends string }
 	? E
 	: string;
 
-type EntityState = {
+export type EntityState = {
 	state: string;
 	attributes: Record<string, unknown>;
 	lastChanged: Date;
@@ -17,8 +17,8 @@ export type MiraiEvent = {
 	source: Source;
 	event_type: EventType;
 	entity_id: EntityId;
-	old_state?: EntityState;
-	new_state?: EntityState;
+	old_state: EntityState | null;
+	new_state: EntityState | null;
 };
 
 export type Handler = (e: MiraiEvent) => void;
