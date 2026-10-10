@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 
 const url = process.env.HA_HOST;
 const token = process.env.HA_TOKEN;
-const ourArg = process.argv[2] ?? "generated/entities.ts";
+const outAtg = process.argv[2] ?? "generated/entities.ts";
 
 if (!url || !token) {
 	console.error("HA_HOST and HA_TOKEN must be set");
@@ -33,7 +33,7 @@ ${ids.map((id) => `\t\t| "${id}"`).join("\n")};
 }
 `;
 
-const outPath = resolve(process.cwd(), ourArg);
+const outPath = resolve(process.cwd(), outAtg);
 await Bun.write(outPath, out);
 
 console.log(`wrote ${ids.length} entities -> ${outPath}`);

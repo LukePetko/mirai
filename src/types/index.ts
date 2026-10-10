@@ -23,11 +23,17 @@ export type MiraiEvent = {
 
 export type Handler = (e: MiraiEvent) => void;
 
+export type Services = Register extends {
+	services: infer S extends Record<string, string>;
+}
+	? S
+	: Record<string, string>;
+
 export type Capabilities = {
 	homeassistant: {
-		callService(
-			domain: string,
-			service: string,
+		callService<D extends keyof Services & string>(
+			domain: D,
+			service: Services[D],
 			target?: { entity_id: EntityId | EntityId[] },
 			data?: object,
 		): Promise<unknown>;
