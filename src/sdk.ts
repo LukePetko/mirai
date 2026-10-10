@@ -6,6 +6,7 @@ export type {
 	HassState,
 	EntityId,
 	Register,
+	StateOf,
 } from "./types";
 import type { Automation, Cap } from "./types";
 
