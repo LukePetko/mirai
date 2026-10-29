@@ -1,3 +1,4 @@
+import "./src/plugin";
 import "./src";
 import "~/connectors/homeassistant";
 
