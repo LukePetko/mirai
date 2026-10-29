@@ -27,7 +27,7 @@ deploy:
       --restart unless-stopped
       --init
       --network host
-      -e HA_HOST=$HA_HOST
+      -e HA_HOST=http://$HA_HOST:$HA_PORT
       -e HA_TOKEN=$HA_TOKEN
       -v /mnt/user/appdata/mirai-automations-ts/automations:/automations:ro
       -v mirai_ts_data:/data
