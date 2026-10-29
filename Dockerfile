@@ -11,7 +11,10 @@ COPY src ./src
 # the named volume takes this dir's ownership the first time it's created
 RUN mkdir /data && chown bun:bun /data
 
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+   KV_PATH=/data/kv.sqlite \
+   AUTOMATIONS_PATH=/automations
+
 USER bun
 
 CMD ["bun", "--no-install", "index.ts"]

@@ -3,28 +3,27 @@
 	"module": "index.ts",
 	"type": "module",
 	"private": true,
-    "exports": {
-        ".": "./src/sdk.ts"
-    },
-    "bin": {
-        "mirai-entity-codegen": "./src/codegen/entities.ts",
-        "mirai-service-codegen": "./src/codegen/services.ts",
-        "mirai-service-data-codegen": "./src/codegen/serviceData.ts"
-    },
+	"exports": {
+		".": "./src/sdk.ts"
+	},
+	"bin": {
+		"mirai-entity-codegen": "./src/codegen/entities.ts",
+		"mirai-service-codegen": "./src/codegen/services.ts",
+		"mirai-service-data-codegen": "./src/codegen/serviceData.ts"
+	},
 	"scripts": {
 		"dev": "bun --hot index.ts",
 		"lint": "oxlint",
 		"lint:fix": "oxlint --fix",
-        "typecheck": "tsc --noEmit"
+		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
 		"home-assistant-js-websocket": "^9.7.0",
-		"uuid": "^14.0.2",
 		"zod": "^4.6.5"
 	},
 	"devDependencies": {
 		"@types/bun": "latest",
 		"oxlint": "^1.85.0",
-        "typescript": "^5"
+		"typescript": "^5"
 	}
 }
