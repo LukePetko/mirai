@@ -1,33 +1,20 @@
-# Build stage
-FROM elixir:1.17-otp-27-alpine AS builder
-
+FROM oven/bun:1.3-slim
 WORKDIR /app
 
-RUN apk add --no-cache git
+# deps first, so this layer is cached until package.json/bun.lock change
+COPY package.json bun.lock ./
+RUN bun install --production --frozen-lockfile
 
-RUN mix local.hex --force && mix local.rebar --force
+COPY tsconfig.json index.ts ./
+COPY src ./src
 
-ENV MIX_ENV=prod
+# the named volume takes this dir's ownership the first time it's created
+RUN mkdir /data && chown bun:bun /data
 
-COPY mix.exs mix.lock ./
-RUN mix deps.get --only prod
-RUN mix deps.compile
+ENV NODE_ENV=production \
+   KV_PATH=/data/kv.sqlite \
+   AUTOMATIONS_PATH=/automations
 
-COPY lib lib
+USER bun
 
-RUN mix compile
-RUN mix release
-
-# Runtime stage - use matching Erlang Alpine image
-FROM erlang:27-alpine AS runtime
-
-WORKDIR /app
-
-COPY --from=builder /app/_build/prod/rel/mirai ./
-
-RUN mkdir -p /app/data
-
-ENV HOME=/app
-
-ENTRYPOINT ["/app/bin/mirai"]
-CMD ["start"]
+CMD ["bun", "--no-install", "index.ts"]
