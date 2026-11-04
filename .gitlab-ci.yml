@@ -3,8 +3,8 @@ stages:
   - deploy
 
 variables:
-  IMAGE_NAME: mirai-ts
-  CONTAINER_NAME: mirai-ts
+  IMAGE_NAME: mirai
+  CONTAINER_NAME: mirai
 
 build:
   stage: build
@@ -30,7 +30,7 @@ deploy:
       -e HA_HOST=http://$HA_HOST:$HA_PORT
       -e HA_TOKEN=$HA_TOKEN
       -v /mnt/user/appdata/mirai-automations-ts/automations:/automations:ro
-      -v mirai_ts_data:/data
+      -v mirai_data:/data
       $IMAGE_NAME
   rules:
     - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "typescript"'
