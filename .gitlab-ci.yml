@@ -29,7 +29,8 @@ deploy:
       --network host
       -e HA_HOST=http://$HA_HOST:$HA_PORT
       -e HA_TOKEN=$HA_TOKEN
-      -v /mnt/user/appdata/mirai-automations-ts/automations:/automations:ro
+      -e AUTOMATIONS_PATH=/repo/automations
+      -v /mnt/user/appdata/mirai-automations-ts:/repo:ro
       -v mirai_data:/data
       $IMAGE_NAME
   rules:
